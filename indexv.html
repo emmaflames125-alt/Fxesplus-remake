@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chimex LCD Dumper Pro+</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0015">
+
+<style>
+body{
+    margin:0;
+    background:#050010;
+    color:#e9d5ff;
+    font-family:monospace;
+    text-align:center;
+    border:3px solid #a855f7;
+    box-shadow:0 0 25px #a855f7, inset 0 0 25px #a855f7;
+}
+
+.header{
+    padding:12px;
+    background:#0a0015;
+    border-bottom:2px solid #a855f7;
+}
+
+canvas{
+    width:95vw;
+    max-width:480px;
+    background:#fff;
+    border-radius:10px;
+    cursor:crosshair;
+}
+
+.controls button{
+    margin:4px;
+    padding:8px;
+    background:#1a0025;
+    border:1px solid #a855f7;
+    color:#fff;
+    cursor:pointer;
+}
+
+.panel{
+    margin-top:10px;
+    padding:10px;
+    border:1px dashed #a855f7;
+    width:95%;
+    max-width:480px;
+    margin:auto;
+}
+
+#hexView{
+    max-height:200px;
+    overflow:auto;
+    background:#0a0015;
+    padding:10px;
+    text-align:left;
+    white-space:pre;
+    font-size:12px;
+}
+
+#bitPlane{
+    font-size:10px;
+    white-space:pre;
+    overflow:auto;
+    max-height:300px;
+    background:#0a0015;
+    padding:5px;
+}
+
+#pngGallery img{
+    width:80px;
+    height:60px;
+    object-fit:cover;
+    border-radius:6px;
+    border:2px solid #444;
+    cursor:pointer;
+}
+
+#pngGallery img.selected{
+    border:3px solid #22c55e;
+}
+
+.tutorial{
+    margin:20px;
+    padding:10px;
+    border:1px solid #a855f7;
+}
+
+/* highlight cell overlay */
+.highlight{
+    position:absolute;
+    pointer-events:none;
+    border:2px solid red;
+    box-sizing:border-box;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Chimex LCD Dumper Pro+ (Hex + Highlight)</div>
+
+<canvas id="canvas"></canvas>
+
+<div class="controls">
+<button onclick="clearGrid()">Clear</button>
+<button onclick="toggleGrid()">Grid</button>
+<button onclick="zoomIn()">+</button>
+<button onclick="zoomOut()">-</button>
+
+<button onclick="newGrid()">+ Grid</button>
+<button onclick="switchGrid(-1)">Prev</button>
+<button onclick="switchGrid(1)">Next</button>
+
+<button onclick="exportBin()">BIN</button>
+<button onclick="exportHex()">HEX</button>
+<button onclick="exportC()">C</button>
+
+<button onclick="openFolder()">Import PNG Folder</button>
+</div>
+
+<div class="panel">
+<input type="file" id="imgInput">
+</div>
+
+<div class="panel">
+<b>PNG Folder Gallery</b><br>
+<input type="file" id="folderInput" webkitdirectory style="display:none">
+<div id="pngGallery"></div>
+</div>
+
+<div class="panel">
+<b>Hex Editor View</b>
+<pre id="hexView"></pre>
+</div>
+
+<div class="panel">
+<b>Bit-Plane View</b>
+<pre id="bitPlane"></pre>
+</div>
+
+<div class="tutorial">
+<h2>📘 How to Use This Tool</h2>
+<p>Import → Edit → Export</p>
+</div>
+
+<script>
+if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js');
+}
+
+/* STATE */
+const COLS=96, ROWS=31;
+let grids=[createGrid()];
+let currentGridIndex=0;
+let cellSize=5;
+let showGrid=true;
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let isDrawing=false;
+
+/* GRID */
+function createGrid(){
+    return Array.from({length:ROWS},()=>Array(COLS).fill(0));
+}
+
+function getGrid(){
+    return grids[currentGridIndex];
+}
+
+/* DRAW */
+function draw(){
+    let grid=getGrid();
+    canvas.width=COLS*cellSize;
+    canvas.height=ROWS*cellSize;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+
+            ctx.fillStyle=grid[y][x]?"black":"white";
+            ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
+
+            if(showGrid){
+                ctx.strokeStyle="#ddd";
+                ctx.strokeRect(x*cellSize,y*cellSize,cellSize,cellSize);
+            }
+        }
+    }
+
+    updateHexView();
+    updateBitPlane();
+}
+
+/* HEX */
+function updateHexView(){
+    let bytes=getAllBytes();
+    let out="";
+
+    for(let i=0;i<bytes.length;i+=16){
+        let addr=i.toString(16).padStart(4,"0")+"h  ";
+        let row=bytes.slice(i,i+16)
+            .map(b=>b.toString(16).padStart(2,"0"))
+            .join(" ");
+
+        out+=addr+row+"\n";
+    }
+
+    document.getElementById("hexView").textContent=out;
+}
+
+/* BIT PLANE */
+function updateBitPlane(){
+    let grid=getGrid();
+    let lines=[];
+    for(let y=0;y<ROWS;y++){
+        lines.push(grid[y].join("").replace(/0/g,".").replace(/1/g,"#"));
+    }
+    document.getElementById("bitPlane").textContent=lines.join("\n");
+}
+
+/* BYTE CONVERSION */
+function getBytesFromGrid(grid){
+    let bytes=[];
+    for(let row of grid){
+        for(let i=0;i<COLS;i+=8){
+            let b=0;
+            for(let j=0;j<8;j++){
+                b=(b<<1)|(row[i+j]||0);
+            }
+            bytes.push(b);
+        }
+    }
+    return bytes;
+}
+
+function getAllBytes(){
+    let all=[];
+    for(let g of grids){
+        all.push(...getBytesFromGrid(g));
+    }
+    return all;
+}
+
+/* IMAGE INPUT */
+imgInput.onchange=e=>{
+    let file=e.target.files[0];
+    let img=new Image();
+    let r=new FileReader();
+
+    r.onload=e=>img.src=e.target.result;
+    r.readAsDataURL(file);
+
+    img.onload=()=>processImage(img);
+};
+
+function processImage(img){
+    let temp=document.createElement("canvas");
+    temp.width=COLS;
+    temp.height=ROWS;
+    let t=temp.getContext("2d");
+
+    t.drawImage(img,0,0,COLS,ROWS);
+    let d=t.getImageData(0,0,COLS,ROWS).data;
+    let g=getGrid();
+
+    for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+            let i=(y*COLS+x)*4;
+            g[y][x]=(d[i]+d[i+1]+d[i+2])<380?1:0;
+        }
+    }
+
+    draw();
+}
+
+/* PNG */
+function openFolder(){
+    folderInput.click();
+}
+
+folderInput.onchange=e=>{
+    let gal=document.getElementById("pngGallery");
+    gal.innerHTML="";
+
+    Array.from(e.target.files).forEach(f=>{
+        if(f.type==="image/png"){
+            let r=new FileReader();
+
+            r.onload=e=>{
+                let img=document.createElement("img");
+                img.src=e.target.result;
+
+                img.onclick=()=>{
+                    document.querySelectorAll("#pngGallery img")
+                        .forEach(i=>i.classList.remove("selected"));
+
+                    img.classList.add("selected");
+
+                    let im=new Image();
+                    im.src=img.src;
+                    im.onload=()=>processImage(im);
+                };
+
+                gal.appendChild(img);
+            };
+
+            r.readAsDataURL(f);
+        }
+    });
+};
+
+/* MOUSE DRAW + HIGHLIGHT */
+canvas.addEventListener("mousedown",e=>{
+    isDrawing=true;
+    handleDraw(e);
+});
+
+canvas.addEventListener("mouseup",()=>isDrawing=false);
+canvas.addEventListener("mouseleave",()=>isDrawing=false);
+
+canvas.addEventListener("mousemove",e=>{
+    if(isDrawing) handleDraw(e);
+});
+
+function handleDraw(e){
+    let rect=canvas.getBoundingClientRect();
+    let x=Math.floor((e.clientX-rect.left)/cellSize);
+    let y=Math.floor((e.clientY-rect.top)/cellSize);
+
+    let grid=getGrid();
+
+    if(x>=0 && x<COLS && y>=0 && y<ROWS){
+        grid[y][x]=1-grid[y][x];
+        draw();
+    }
+}
+
+/* CONTROLS */
+function clearGrid(){grids[currentGridIndex]=createGrid();draw();}
+function toggleGrid(){showGrid=!showGrid;draw();}
+function zoomIn(){cellSize++;draw();}
+function zoomOut(){cellSize--;draw();}
+function newGrid(){grids.push(createGrid());currentGridIndex++;draw();}
+function switchGrid(d){currentGridIndex=Math.max(0,Math.min(grids.length-1,currentGridIndex+d));draw();}
+
+/* EXPORT */
+function exportBin(){download(new Uint8Array(getAllBytes()),"data.bin");}
+function exportHex(){download(getAllBytes().map(b=>b.toString(16)).join(" "),"data.hex");}
+function exportC(){download("const unsigned char data[] = {"+getAllBytes().join(",")+"};","data.h");}
+
+function download(data,name){
+    let blob=new Blob([data]);
+    let a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    a.click();
+}
+
+/* INIT */
+draw();
+</script>
+
+</body>
+</html>
