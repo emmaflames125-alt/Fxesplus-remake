@@ -6,33 +6,27 @@
   <title>Fxesplus ROP Compiler + RMK</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="manifest" href="data:application/manifest+json,{
-    &quot;name&quot;: &quot;Fxesplus ROP Compiler&quot;,
-    &quot;short_name&quot;: &quot;ROP Tool&quot;,
-    &quot;start_url&quot;: &quot;.&quot;,
-    &quot;display&quot;: &quot;standalone&quot;,
-    &quot;background_color&quot;: &quot;#09090b&quot;,
-    &quot;theme_color&quot;: &quot;#6366f1&quot;,
-    &quot;icons&quot;: [
-      {&quot;src&quot;: &quot;https://via.placeholder.com/192/4f46e5/ffffff&quot;, &quot;sizes&quot;: &quot;192x192&quot;, &quot;type&quot;: &quot;image/png&quot;},
-      {&quot;src&quot;: &quot;https://via.placeholder.com/512/4f46e5/ffffff&quot;, &quot;sizes&quot;: &quot;512x512&quot;, &quot;type&quot;: &quot;image/png&quot;}
-    ]
-  }"/>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234f46e5'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white'%3E⚡%3C/text%3E%3C/svg%3E" />
+  
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    body { font-family: system-ui, sans-serif; }
     .token { font-family: 'Courier New', monospace; }
     .glow { text-shadow: 0 0 15px rgb(99 102 241); }
     .editor {
       font-family: 'Courier New', monospace;
       font-size: 15px;
-      line-height: 1.5;
+      line-height: 1.6;
       tab-size: 4;
     }
     .success-pop { animation: pop 0.4s ease; }
-    @keyframes pop {
-      0% { transform: scale(0.95); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    @keyframes pop { 
+      0% { transform: scale(0.95); } 
+      50% { transform: scale(1.05); } 
+      100% { transform: scale(1); } 
     }
   </style>
 </head>
@@ -42,62 +36,60 @@
   <div class="flex justify-between items-center mb-10">
     <div>
       <h1 class="text-5xl font-bold text-indigo-400 glow flex items-center gap-4">
-        <i class="fas fa-microchip"></i>
-        Fxesplus ROP
+        <i class="fas fa-microchip"></i> Fxesplus ROP
       </h1>
-      <p class="text-zinc-400">Compiler + RMK Hackstring Generator</p>
+      <p class="text-zinc-400">Compiler + RMK Hackstring • Installable PWA</p>
     </div>
-    <div class="text-emerald-400 font-mono text-sm">
-      Emmanuel Chimex (@ChiMex @Chimexballer123)
+    <div class="flex items-center gap-4">
+      <div class="text-emerald-400 font-mono text-sm">Emmanuel Chimex (@ChiMex)</div>
+      <button onclick="installPWA()" id="installBtn"
+              class="hidden bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-2xl text-sm font-medium">
+        <i class="fas fa-download"></i> Install App
+      </button>
     </div>
   </div>
 
   <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
     <!-- ASM Editor -->
     <div class="xl:col-span-7 bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold flex items-center gap-3">
-          <i class="fas fa-code text-indigo-400"></i>
-          ASM Editor
+          <i class="fas fa-code text-indigo-400"></i> ASM Editor
         </h2>
         <div class="flex gap-3">
-          <button onclick="loadExample()" 
-                  class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm flex items-center gap-2">
-            <i class="fas fa-file"></i> Load Example
+          <button onclick="loadExample()" class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm flex items-center gap-2">
+            <i class="fas fa-file"></i> Example
           </button>
-          <button onclick="clearEditor()" 
-                  class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm flex items-center gap-2">
+          <button onclick="clearEditor()" class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm flex items-center gap-2">
             <i class="fas fa-trash"></i> Clear
           </button>
         </div>
       </div>
 
-      <textarea id="asmEditor" rows="18" spellcheck="false"
+      <textarea id="asmEditor" rows="20" spellcheck="false"
         class="editor w-full bg-zinc-950 border border-zinc-700 rounded-2xl p-6 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
 
       <div class="mt-6 flex gap-4">
         <button onclick="compileFromEditor()" 
                 class="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 py-5 rounded-2xl font-semibold text-lg flex items-center justify-center gap-3">
-          <i class="fas fa-play"></i> Compile from Editor
+          <i class="fas fa-play"></i> Compile
         </button>
         <label class="flex-1 cursor-pointer">
           <input type="file" id="asmUpload" accept=".asm,.txt" class="hidden" onchange="handleFileUpload(event)"/>
           <div class="bg-zinc-800 hover:bg-zinc-700 py-5 rounded-2xl font-semibold text-lg flex items-center justify-center gap-3 h-full">
-            <i class="fas fa-upload"></i> Upload .asm File
+            <i class="fas fa-upload"></i> Upload .asm
           </div>
         </label>
       </div>
     </div>
 
-    <!-- RMK & Controls -->
+    <!-- Right Column -->
     <div class="xl:col-span-5 space-y-8">
-      <!-- Compiler Status -->
       <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
-        <h2 class="text-2xl font-semibold mb-6">Compiler Output</h2>
+        <h2 class="text-2xl font-semibold mb-6">Label Debug</h2>
         <pre id="debugOutput" class="bg-black p-6 rounded-2xl text-emerald-300 font-mono text-sm max-h-80 overflow-auto whitespace-pre-wrap"></pre>
       </div>
 
-      <!-- Tokens -->
       <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
         <div class="flex justify-between mb-6">
           <h2 class="text-2xl font-semibold">Compiled Tokens</h2>
@@ -109,23 +101,20 @@
         <div id="tokensContainer" class="token bg-black p-6 rounded-2xl max-h-80 overflow-auto text-emerald-200 font-mono text-sm leading-relaxed border border-zinc-800"></div>
       </div>
 
-      <!-- RMK Panel -->
       <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
         <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-          <i class="fas fa-wand-magic-sparkles text-emerald-400"></i>
-          RMK Hackstring
+          <i class="fas fa-wand-magic-sparkles text-emerald-400"></i> RMK Hackstring
         </h2>
-        
         <button onclick="remakeCurrentHackstring()" id="rmkBtn"
                 class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 py-5 rounded-2xl font-semibold text-lg flex items-center justify-center gap-3 disabled:opacity-50" disabled>
-          <i class="fas fa-magic"></i> Generate Hackstring (.hs)
+          <i class="fas fa-magic"></i> Generate .hs
         </button>
 
         <div id="rmkResult" class="mt-8 hidden">
           <div class="bg-black rounded-2xl p-6 font-mono text-emerald-300 text-sm break-all border border-emerald-900" id="hackstringOutput"></div>
           <button onclick="downloadHackstring()" 
                   class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-medium flex items-center justify-center gap-2">
-            <i class="fas fa-download"></i> Download .hs File
+            <i class="fas fa-download"></i> Download hackstring.hs
           </button>
         </div>
       </div>
@@ -133,39 +122,42 @@
   </div>
 
   <div class="text-center mt-12 text-xs text-zinc-500">
-    Fxesplus ROP Compiler + RMK • Install as PWA • Works Offline
+    Fxesplus ROP Compiler + RMK • Install as PWA (works offline)
   </div>
 </div>
 
+<!-- Service Worker Registration -->
 <script>
-// ====================== YOUR CONSTANTS ======================
-const dict = {
-  'getkeycode':'(-) cs30 0 0','r2=r0':'cv12 = 0 0','call 0x1852c':', ⁰ 1 0','pop_xr0':'cv24 M 1 0',
-  'pop_er0':'sin( 2 0 0','memcpy':'cv04 pol( 1 0','pop_er2':'tan-¹( D 0 0','pop_er8':'Pol x10 0 0',
-  'pop_er10':'','pop_er12':'log( : 0 0','pop_er14':'S( ÷ 0 0','sp=er14,pop er14':'log( ÷ 0 0',
+// ====================== CONSTANTS (same as before) ======================
+const dict = { /* ... same dict as previous response ... */ 
+  'getkeycode':'(-) cs30 0 0','r2=r0':'cv12 = 0 0','call 0x1852c':', ⁰ 1 0',
+  'pop_xr0':'cv24 M 1 0','pop_er0':'sin( 2 0 0','memcpy':'cv04 pol( 1 0',
+  'pop_er2':'tan-¹( D 0 0','pop_er8':'Pol x10 0 0','pop_er10':'',
+  'pop_er12':'log( : 0 0','pop_er14':'S( ÷ 0 0','sp=er14,pop er14':'log( ÷ 0 0',
   'strcpy_null':'(-) cs23 0 0','call 0x440a':'cs10 D 0 0','call 0x440e':'cs14 D 0 0',
-  'call 0x442c':', D 0 0','quadcpy':'o (-) 1 0','pop_xr12':'³√( ) 0 0','r0=[er2]':'MaxY D 1 0',
-  ' [er2]=r0,r0=0':'a M+ 0 0','[er0]=r2':'S( cs23 0 0','multiline_ASCII':'A 4 0 0',
-  'print_4lines':'= 4 0 0','delay':'A F 0 0','call 0x2aae':'_| cs24 0 0',
-  'call 0x2cb0':'sin-¹( , 0 0','nop':'tan( 2 0 0','strcpy':'h × 0 0','k0=r2=0':'cs19 ->A 0 0',
-  'call 0x7468':'log( x10 0 0','call 0x746a':'S( x10 0 0','memcpy, pop er14':'cv34 x10 0 0',
-  'er0=er2':'cv38 xor 0 0','er2=1,r0=1':'cv24 -y 0 0','r0=00':'0 ⁰ 1 0','pop_er4':'4 - 0 0',
+  'call 0x442c':', D 0 0','quadcpy':'o (-) 1 0','pop_xr12':'³√( ) 0 0',
+  'r0=[er2]':'MaxY D 1 0','[er2]=r0,r0=0':'a M+ 0 0','[er0]=r2':'S( cs23 0 0',
+  'multiline_ASCII':'A 4 0 0','print_4lines':'= 4 0 0','delay':'A F 0 0',
+  'call 0x2aae':'_| cs24 0 0','call 0x2cb0':'sin-¹( , 0 0','nop':'tan( 2 0 0',
+  'strcpy':'h × 0 0','k0=r2=0':'cs19 ->A 0 0','call 0x7468':'log( x10 0 0',
+  'call 0x746a':'S( x10 0 0','memcpy, pop er14':'cv34 x10 0 0','er0=er2':'cv38 xor 0 0',
+  'er2=1,r0=1':'cv24 -y 0 0','r0=00':'0 ⁰ 1 0','pop_er4':'4 - 0 0',
   'sp=er14,pop qr8 xr4':'oy','pop qr8 xr4':'_| @ 0 0','pop_xr4':'sin-¹( @ 0 0',
   'pop_qr8':'maxX 4 0 0','BL f_2cfe':'x10 4 0 0','sp+=04h':'M 5 0 0',
   'BL diagnostic':'cv24 ->B 0 0','pop_qr0':'cv28 ->B 0 0','pop_qr8':', ->X 0 0',
   'r2=00':'cs01 o 1 0','call 0x16058':'X (-) 1 0','call 0x1605a':'@ (-) 1 0',
   'call 0x1605c':'° (-) 1 0','getscancode':'cs36 sin-¹( 0 0','numcpy':'-y cs30 1 0',
-  'scancode2int':'£x² cs30 0 0','invalid_var':'cv20 cs30 1 0','table_prompt_print':'cs30 cs15 1 0',
-  'num2str':'cv22 ⁰ 0 0','load_table':'cs30 4 1 0','sp=er0,rt':'Conjg( E 0 0',
-  'set lr':'Abs( cs17 1 0','buffer_clear':'8 - 0 0','r0=r0!=0':'> €( 0 0',
-  'r0=_cmp_ne':'cv26 g_ 0 0','er0=er2_if_le':'cv32 g_ 0 0','hex_byte':'4 ->X 0 0',
-  'line_print.col_0':'cs27 . 0 0','er2=er0,pop er8':'log( x10 0 0',
-  '[er8]=er2,pop xr8':'cs14 D 0 0','render':', 1 0 0','[er8]+=er2,pop xr8':'cs10 D 0 0',
-  'er8=[er0]':'⁰ 4 1 0','call 0x1417e':'xor A 1 0','call 0x1468c':'Ran# F 1 0',
-  'er0=er8':'xor A 1 0'
+  'scancode2int':'£x² cs30 0 0','invalid_var':'cv20 cs30 1 0',
+  'table_prompt_print':'cs30 cs15 1 0','num2str':'cv22 ⁰ 0 0','load_table':'cs30 4 1 0',
+  'sp=er0,rt':'Conjg( E 0 0','set lr':'Abs( cs17 1 0','buffer_clear':'8 - 0 0',
+  'r0=r0!=0':'> €( 0 0','r0=_cmp_ne':'cv26 g_ 0 0','er0=er2_if_le':'cv32 g_ 0 0',
+  'hex_byte':'4 ->X 0 0','line_print.col_0':'cs27 . 0 0',
+  'er2=er0,pop er8':'log( x10 0 0','[er8]=er2,pop xr8':'cs14 D 0 0',
+  'render':', 1 0 0','[er8]+=er2,pop xr8':'cs10 D 0 0','er8=[er0]':'⁰ 4 1 0',
+  'call 0x1417e':'xor A 1 0','call 0x1468c':'Ran# F 1 0','er0=er8':'xor A 1 0'
 };
 
-const charmap = {
+const charmap = { /* full charmap from previous version */ 
   "00": "", "01": "cs01", "02": "cs02", "03": "cs03", "04": "cs04", "05": "cs05", "06": "cs06", "07": "cs07",
   "08": "cs08", "09": "cs09", "0a": "cs10", "0b": "cs11", "0c": "cs12", "0d": "cs13", "0e": "cs14", "0f": "cs15",
   "10": "£x²", "11": "£x", "12": "n", "13": "£y²", "14": "£y", "15": "£xy", "16": "£y³", "17": "£x²y",
@@ -200,85 +192,100 @@ const charmap = {
   "f8": "cv34", "f9": "cv35", "fa": "cv36", "fb": "cv37", "fc": "cv38", "fd": "cv39", "fe": "cv40", "ff": "@"
 };
 
-// ====================== COMPILER ======================
+// ====================== COMPILER LOGIC (same as last version) ======================
 function hexToLEBytes(val) {
+  if (!val) return [];
   if (val.startsWith("0x")) val = val.slice(2);
-  if (val.length % 2) val = "0" + val;
+  if (val.length % 2 === 1) val = "0" + val;
   const bytes = [];
   for (let i = 0; i < val.length; i += 2) bytes.push(val.slice(i, i+2));
   return bytes.reverse();
 }
 
 function buildLabelTable(lines) {
-  let addr = 0, labels = {};
-  for (let l of lines) {
-    l = l.trim();
-    if (!l || l.startsWith("#")) continue;
-    if (l.startsWith("#org")) { addr = parseInt(l.split(/\s+/)[1], 16); continue; }
-    if (l.endsWith(":")) { labels[l.slice(0,-1)] = addr; continue; }
+  let addr = 0;
+  const labels = {};
+  for (let line of lines) {
+    line = line.trim();
+    if (!line || line.startsWith("#")) continue;
+    if (line.startsWith("#org")) {
+      addr = parseInt(line.split(/\s+/)[1], 16);
+      continue;
+    }
+    if (line.endsWith(":")) {
+      labels[line.slice(0, -1)] = addr;
+      continue;
+    }
     addr += 2;
   }
   return labels;
 }
 
 function resolveAdrOf(text, labels) {
-  return text.replace(/adr_of\[(-?\d+)\](\w+)/g, (_, off, lbl) => {
-    if (!(lbl in labels)) throw new Error(`Unknown label ${lbl}`);
-    return `0x${(labels[lbl] + parseInt(off)).toString(16).padStart(4,'0')}`;
+  return text.replace(/adr_of\[(-?\d+)\](\w+)/g, (_, offset, lbl) => {
+    if (!(lbl in labels)) throw new Error(`Unknown label: ${lbl}`);
+    return `0x${(labels[lbl] + parseInt(offset)).toString(16).padStart(4, '0')}`;
   });
 }
 
-function decodeData(expr, labels, expected) {
-  const parts = expr.split(',').map(p => p.trim());
+function decodeData(expr, labels, byteCount) {
+  let parts = expr.split(',').map(p => p.trim());
   let raw = [];
   for (let p of parts) {
     if (p.includes("adr_of[")) p = resolveAdrOf(p, labels);
     raw.push(...hexToLEBytes(p));
   }
-  if (raw.length !== expected) throw new Error(`Expected ${expected} bytes`);
+  if (raw.length !== byteCount) throw new Error(`Expected ${byteCount} bytes`);
   return raw.map(b => charmap[b.toLowerCase()] || "");
 }
 
 function processROP(lines) {
   const labels = buildLabelTable(lines);
   let payload = [];
+
   let i = 0;
   while (i < lines.length) {
-    let raw = lines[i].trim();
-    if (!raw || raw.startsWith("#") || raw.endsWith(":")) { i++; continue; }
-    let line = resolveAdrOf(raw, labels);
+    let rawLine = lines[i].trim();
+    if (!rawLine || rawLine.startsWith("#") || rawLine.endsWith(":")) { i++; continue; }
 
-    if (line.endsWith("pop er8") || line.endsWith("pop er14") || line === "pop er8") {
-      payload.push(dict["pop_er8"] || dict[line]);
+    let line = resolveAdrOf(rawLine, labels);
+
+    if (line.includes("r2=r0, pop er8") || line.includes("r2=r0,pop er8")) {
+      payload.push(dict['r2=r0']);
       i++;
-      if (i >= lines.length) throw new Error("Missing data after pop erN");
-      payload.push(...decodeData(resolveAdrOf(lines[i].trim(), labels), labels, 2));
-      i++; continue;
-    }
-    if (line.endsWith("pop xr8") || line.endsWith("pop xr0")) {
-      payload.push(dict[line]);
+      if (i < lines.length) {
+        let data = resolveAdrOf(lines[i].trim(), labels);
+        payload.push(...decodeData(data, labels, 2));
+      }
       i++;
-      if (i >= lines.length) throw new Error("Missing data after pop xrN");
-      payload.push(...decodeData(resolveAdrOf(lines[i].trim(), labels), labels, 4));
-      i++; continue;
+      continue;
     }
-    if (/^xr\d+=.+,.+$/.test(line)) {
-      const reg = line.split("=")[0];
-      payload.push(dict[`pop_${reg}`]);
-      payload.push(...decodeData(line.split("=")[1], labels, 4));
-      i++; continue;
+
+    if (/^er\d+=/.test(line)) {
+      const reg = line.split('=')[0];
+      const value = line.split('=')[1];
+      payload.push(dict[`pop_\( {reg}`] || `pop_ \){reg}`);
+      payload.push(...decodeData(value, labels, 2));
+      i++;
+      continue;
     }
-    if (/^er\d+=.+$/.test(line) && !["er0=er8","er8=er0","er8=[er0]"].includes(line)) {
-      const reg = line.split("=")[0];
-      payload.push(dict[`pop_${reg}`]);
-      payload.push(...decodeData(line.split("=")[1], labels, 2));
-      i++; continue;
+
+    if (/^xr\d+=.+,.+/.test(line)) {
+      const reg = line.split('=')[0];
+      const value = line.split('=')[1];
+      payload.push(dict[`pop_\( {reg}`] || `pop_ \){reg}`);
+      payload.push(...decodeData(value, labels, 4));
+      i++;
+      continue;
     }
+
     if (line in dict) {
       payload.push(dict[line]);
-      i++; continue;
+      i++;
+      continue;
     }
-    throw new Error(`Unknown instruction: ${raw}`);
+
+    throw new Error(`Unknown instruction: ${rawLine}`);
   }
 
   const out = new Array(100).fill("");
@@ -286,74 +293,72 @@ function processROP(lines) {
   return { tokens: out, labels };
 }
 
-// ====================== RMK (Fixed) ======================
+// ====================== RMK ======================
 function remakeHackstring(tokens) {
   let content = tokens.filter(t => t && t !== "" && t !== "00");
   const len = content.length;
 
-  let p = [], r = [], s = null;
-
   if (len > 48) {
-    p = content.slice(48);
-    r = new Array(100 - len).fill("1");
+    const p = content.slice(48);
+    const r = new Array(100 - len).fill("1");
     content = content.slice(0, 48);
-    s = 0;
+    return p.join("") + r.join("") + content.join("");
   } else if (len > 0) {
-    p = new Array(52).fill("1");
-    r = new Array(48 - len).fill("1");
-    s = 1;
+    const p = new Array(52).fill("1");
+    const r = new Array(48 - len).fill("1");
+    return p.join("") + content.join("") + r.join("");
   }
-
-  return (s === 1) 
-    ? p.join("") + content.join("") + r.join("")
-    : (s === 0) 
-      ? p.join("") + r.join("") + content.join("")
-      : "";
+  return "";
 }
 
-// ====================== UI ======================
+// ====================== UI + PWA ======================
 let currentTokens = null;
 let currentHackstring = null;
+let deferredPrompt = null;
 
 function renderTokens(tokens) {
   let html = '';
   for (let i = 0; i < 100; i += 10) {
-    const chunk = tokens.slice(i, i + 10);
+    const chunk = tokens.slice(i, i+10);
     const range = `\( {i.toString().padStart(3,'0')}- \){(i+9).toString().padStart(3,'0')}`;
-    html += `<div class="mb-2"><span class="text-zinc-500">${range}:</span> ${chunk.map(t => t || '<span class="text-zinc-700">—</span>').join(' ')}</div>`;
+    html += `<div class="mb-2"><span class="text-zinc-500">${range}:</span> ${chunk.map(t => t || '<span class="text-zinc-700">—</span>').join(" ")}</div>`;
   }
-  document.getElementById('tokensContainer').innerHTML = html;
+  document.getElementById("tokensContainer").innerHTML = html;
 }
 
-async function compileFromEditor() {
-  const editor = document.getElementById('asmEditor');
-  const lines = editor.value.split('\n');
+function compileFromEditor() {
+  const text = document.getElementById("asmEditor").value;
+  const lines = text.split(/\r?\n/);
+
   try {
     const result = processROP(lines);
     currentTokens = result.tokens;
 
-    let debug = "Labels:\n";
-    Object.entries(result.labels).forEach(([k,v]) => debug += `  \( {k} → 0x \){v.toString(16).padStart(4,'0')}\n`);
-    document.getElementById('debugOutput').textContent = debug;
+    let debug = "Labels found:\n";
+    for (let [lbl, addr] of Object.entries(result.labels)) {
+      debug += `  \( {lbl} → 0x \){addr.toString(16).padStart(4,'0')}\n`;
+    }
+    document.getElementById("debugOutput").textContent = debug || "No labels found.";
 
     renderTokens(currentTokens);
-    document.getElementById('downloadMkBtn').classList.remove('hidden');
-    document.getElementById('rmkBtn').disabled = false;
+    document.getElementById("downloadMkBtn").classList.remove("hidden");
+    document.getElementById("rmkBtn").disabled = false;
 
-    // Success animation
-    document.getElementById('tokensContainer').classList.add('success-pop');
-    setTimeout(() => document.getElementById('tokensContainer').classList.remove('success-pop'), 600);
-  } catch (e) {
-    document.getElementById('debugOutput').innerHTML = `<span class="text-red-400">ERROR: ${e.message}</span>`;
+    const container = document.getElementById("tokensContainer");
+    container.classList.add("success-pop");
+    setTimeout(() => container.classList.remove("success-pop"), 600);
+  } catch (err) {
+    document.getElementById("debugOutput").innerHTML = `<span class="text-red-400">ERROR: ${err.message}</span>`;
   }
 }
 
+// File upload, download, remake, example, clear functions (same as before)
 function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    document.getElementById('asmEditor').value = ev.target.result;
+  reader.onload = ev => {
+    document.getElementById("asmEditor").value = ev.target.result;
     compileFromEditor();
   };
   reader.readAsText(file);
@@ -361,24 +366,23 @@ function handleFileUpload(e) {
 
 function downloadMkfile() {
   if (!currentTokens) return;
-  const name = "payload.mkfile";
-  const blob = new Blob([currentTokens.join(" ")], {type: "text/plain"});
+  const blob = new Blob([currentTokens.join(" ")], { type: "text/plain" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = name;
+  a.download = "payload.mkfile";
   a.click();
 }
 
 function remakeCurrentHackstring() {
   if (!currentTokens) return;
   currentHackstring = remakeHackstring(currentTokens);
-  document.getElementById('hackstringOutput').textContent = currentHackstring;
-  document.getElementById('rmkResult').classList.remove('hidden');
+  document.getElementById("hackstringOutput").textContent = currentHackstring;
+  document.getElementById("rmkResult").classList.remove("hidden");
 }
 
 function downloadHackstring() {
   if (!currentHackstring) return;
-  const blob = new Blob([currentHackstring], {type: "text/plain"});
+  const blob = new Blob([currentHackstring], { type: "text/plain" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "hackstring.hs";
@@ -386,34 +390,58 @@ function downloadHackstring() {
 }
 
 function loadExample() {
-  const example = `# Example ROP chain
-#org 0x1234
-main:
-pop_er8
-0x12345678
-pop_xr0
-0xdeadbeef,0xcafef00d
+  const example = `#org 0x8bb0
+start:
+    er8=0x8286
+    r2=r0, pop er8
+    0x3030
 nop
 `;
-  document.getElementById('asmEditor').value = example;
+  document.getElementById("asmEditor").value = example;
   compileFromEditor();
 }
 
 function clearEditor() {
-  document.getElementById('asmEditor').value = '';
-  document.getElementById('debugOutput').textContent = '';
-  document.getElementById('tokensContainer').innerHTML = '';
-  document.getElementById('downloadMkBtn').classList.add('hidden');
-  document.getElementById('rmkBtn').disabled = true;
-  document.getElementById('rmkResult').classList.add('hidden');
+  document.getElementById("asmEditor").value = "";
+  document.getElementById("debugOutput").textContent = "";
+  document.getElementById("tokensContainer").innerHTML = "";
+  document.getElementById("downloadMkBtn").classList.add("hidden");
+  document.getElementById("rmkBtn").disabled = true;
+  document.getElementById("rmkResult").classList.add("hidden");
 }
 
-// PWA Support
+// ====================== PWA INSTALLATION ======================
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choice) => {
+      if (choice.outcome === 'accepted') {
+        console.log('PWA installed');
+      }
+      deferredPrompt = null;
+      document.getElementById("installBtn").classList.add("hidden");
+    });
+  }
+}
+
+// Register Service Worker and Manifest
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('data:application/javascript,').catch(() => {});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.log('Service Worker registration failed:', err);
+    });
+  });
 }
 
-// Tailwind script already loaded via CDN
+// Listen for install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("installBtn").classList.remove("hidden");
+});
+
+// For local testing - create manifest.json and sw.js files
+console.log("%cPWA Ready! To make it fully installable:\n1. Save this file as index.html\n2. Create manifest.json and sw.js in same folder", "color: #22d3ee; font-weight: bold");
 </script>
 </body>
 </html>

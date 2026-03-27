@@ -1,20 +1,17 @@
 {
-  "name": "Chimex LCD Dumper Pro+",
-  "short_name": "LCD Dumper",
-  "start_url": "./index.html",
+  "name": "Fxesplus ROP Compiler",
+  "short_name": "ROP Compiler",
+  "description": "ROP Chain Compiler + RMK Hackstring Generator for Fxesplus",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#050010",
-  "theme_color": "#0a0015",
+  "background_color": "#09090b",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%234f46e5'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white'%3E⚡%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }
